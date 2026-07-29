@@ -2,15 +2,32 @@
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 
-const menus = [
-  { label: '仪表盘', path: '/' },
-  { label: '用户管理', path: '/system/users' },
-  { label: '角色管理', path: '/system/roles' },
-  { label: '菜单权限', path: '/system/menus' },
-  { label: '剧集列表', path: '/dramas' },
-  { label: '标签管理', path: '/tags' },
-  { label: '客户管理', path: '/customers' },
-  { label: '统计模块', path: '/stats' },
+const groups = [
+  {
+    label: '工作台',
+    menus: [
+      { label: '数据概览', path: '/' },
+      { label: '统计分析', path: '/stats' },
+    ],
+  },
+  {
+    label: '内容运营',
+    menus: [
+      { label: '短剧管理', path: '/dramas' },
+      { label: '标签管理', path: '/tags' },
+      { label: '分类管理', path: '/categories' },
+      { label: '首页编排', path: '/sections' },
+    ],
+  },
+  {
+    label: '用户与权限',
+    menus: [
+      { label: '客户管理', path: '/customers' },
+      { label: '后台用户', path: '/system/users' },
+      { label: '角色管理', path: '/system/roles' },
+      { label: '菜单权限', path: '/system/menus' },
+    ],
+  },
 ]
 
 const route = useRoute()
@@ -23,17 +40,20 @@ async function logout() {
 <template>
   <div class="layout">
     <aside class="sidebar">
-      <div class="brand">ReelKit Admin</div>
+      <div class="brand"><span class="brand-mark">R</span><span>ReelKit Admin</span></div>
       <nav>
-        <NuxtLink
-          v-for="m in menus"
-          :key="m.path"
-          class="nav-link"
-          :class="{ active: route.path === m.path || (m.path !== '/' && route.path.startsWith(m.path)) }"
-          :to="m.path"
-        >
-          {{ m.label }}
-        </NuxtLink>
+        <div v-for="group in groups" :key="group.label" class="nav-group">
+          <div class="nav-label">{{ group.label }}</div>
+          <NuxtLink
+            v-for="m in group.menus"
+            :key="m.path"
+            class="nav-link"
+            :class="{ active: route.path === m.path || (m.path !== '/' && route.path.startsWith(m.path)) }"
+            :to="m.path"
+          >
+            {{ m.label }}
+          </NuxtLink>
+        </div>
       </nav>
       <div style="margin-top:24px; padding:12px;" class="muted">
         <div>{{ user?.email }}</div>
