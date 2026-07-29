@@ -1,11 +1,19 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 const client = useSupabaseClient()
+const LOCALES = [
+  { code: 'fr', label: '法语' },
+  { code: 'pt', label: '葡语' },
+  { code: 'ja', label: '日语' },
+  { code: 'es', label: '西语' },
+  { code: 'en', label: '英语' },
+]
 const form = reactive({
   title: '',
   slug: '',
   synopsis: '',
   is_trending: false,
+  primary_locale: 'en',
 })
 const message = ref('')
 const saving = ref(false)
@@ -44,6 +52,7 @@ async function save() {
     synopsis: form.synopsis.trim(),
     status: 'draft',
     is_trending: form.is_trending,
+    primary_locale: form.primary_locale,
   }).select('id').single()
   if (error) {
     saving.value = false
@@ -115,6 +124,13 @@ async function save() {
               <input hidden type="file" accept="image/jpeg,image/png,image/webp" @change="selectCover">
             </label>
           </div>
+          <label class="field">
+            <span class="field-label required">主语言</span>
+            <select v-model="form.primary_locale" class="select">
+              <option v-for="l in LOCALES" :key="l.code" :value="l.code">{{ l.label }}</option>
+            </select>
+            <span class="muted">用户端切换到该语言时默认展示</span>
+          </label>
           <div class="field">
             <span class="field-label">运营属性</span>
             <label class="row card" style="background:#10141c;">

@@ -45,7 +45,7 @@ async function removeDrama(id: string) {
       </div>
       <div class="card">
         <table class="table">
-          <thead><tr><th>封面</th><th>短剧</th><th>状态</th><th>运营标签</th><th>更新时间</th><th></th></tr></thead>
+          <thead><tr><th>封面</th><th>短剧</th><th>主语言</th><th>状态</th><th>运营标签</th><th>更新时间</th><th></th></tr></thead>
           <tbody>
             <tr v-for="d in filtered" :key="d.id">
               <td><img v-if="d.cover_url" :src="d.cover_url" class="cover-cell" alt=""></td>
@@ -53,6 +53,7 @@ async function removeDrama(id: string) {
                 <strong>{{ d.title }}</strong>
                 <div class="muted">{{ d.slug }}</div>
               </td>
+              <td><span class="badge">{{ d.primary_locale || 'en' }}</span></td>
               <td><span class="badge" :class="d.status === 'published' ? 'ok' : 'warn'">{{ d.status }}</span></td>
               <td><span v-if="d.is_trending" class="badge">热门</span><span v-else class="muted">—</span></td>
               <td class="muted">{{ new Date(d.updated_at).toLocaleString() }}</td>
@@ -61,7 +62,7 @@ async function removeDrama(id: string) {
                 <button class="btn danger" @click="removeDrama(d.id)">删除</button>
               </td>
             </tr>
-            <tr v-if="!filtered.length"><td colspan="6" class="empty">没有符合条件的短剧</td></tr>
+            <tr v-if="!filtered.length"><td colspan="7" class="empty">没有符合条件的短剧</td></tr>
           </tbody>
         </table>
       </div>

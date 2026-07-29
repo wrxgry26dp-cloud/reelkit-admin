@@ -32,10 +32,18 @@ const { data: linkedTags, refresh: refreshLinked } = await useAsyncData(`dt-${id
 const selectedTags = ref<string[]>([])
 watch(linkedTags, (v) => { selectedTags.value = [...(v || [])] }, { immediate: true })
 
-const form = reactive({ title: '', slug: '', synopsis: '', status: 'draft', is_trending: false, cover_url: '' })
+const form = reactive({ title: '', slug: '', synopsis: '', status: 'draft', is_trending: false, cover_url: '', primary_locale: 'en' })
 watch(drama, (d) => {
   if (!d) return
-  Object.assign(form, { title: d.title, slug: d.slug, synopsis: d.synopsis, status: d.status, is_trending: d.is_trending, cover_url: d.cover_url || '' })
+  Object.assign(form, {
+    title: d.title,
+    slug: d.slug,
+    synopsis: d.synopsis,
+    status: d.status,
+    is_trending: d.is_trending,
+    cover_url: d.cover_url || '',
+    primary_locale: (d as any).primary_locale || 'en',
+  })
 }, { immediate: true })
 
 const { data: episodes, refresh: refreshEpisodes } = await useAsyncData(`eps-${id.value}`, async () => {
@@ -264,6 +272,13 @@ async function publishDrama() {
               <input hidden type="file" accept="image/jpeg,image/png,image/webp" @change="onCoverSelected">
             </label>
           </div>
+          <label class="field">
+            <span class="field-label required">主语言</span>
+            <select v-model="form.primary_locale" class="select">
+              <option v-for="l in LOCALES" :key="l.code" :value="l.code">{{ l.label }}</option>
+            </select>
+            <span class="muted">用户端切换到该语言时，默认展示此短剧</span>
+          </label>
           <div class="field">
             <span class="field-label">运营标签</span>
             <label v-for="t in tags" :key="t.id" class="row">
