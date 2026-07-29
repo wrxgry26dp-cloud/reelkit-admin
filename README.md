@@ -1,11 +1,6 @@
 # ReelKit Admin
 
-账号密码登录（已初始化）：
-
-- 账号：`admin`
-- 密码：`admin123`
-
-对应 Auth 邮箱：`admin@reelkit.app`
+账号密码登录。初始管理员账号请向项目负责人索取，勿在页面上展示。
 
 ## 模块
 

@@ -3,9 +3,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!user.value) {
     return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`)
   }
+
   const client = useSupabaseClient()
-  const { data } = await client.from('profiles').select('role,username,status').eq('id', user.value.id).maybeSingle()
-  if (!data || data.role !== 'admin' || data.status === 'disabled') {
+  const { data: ok } = await client.rpc('ensure_admin_access')
+  if (!ok) {
     await client.auth.signOut()
     return navigateTo('/login?error=forbidden')
   }
