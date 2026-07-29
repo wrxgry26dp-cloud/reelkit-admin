@@ -1,31 +1,20 @@
 # ReelKit Admin
 
-Management console for the ReelKit short-drama platform.
+账号密码登录（已初始化）：
 
-## Stack
+- 账号：`admin`
+- 密码：`admin123`
 
-- Nuxt 4 + Vue 3 + `@nuxtjs/supabase`
-- Shared Supabase project: `https://pssggtorqkdvxoxwsoaf.supabase.co`
-- Vercel deploy on push to `main`
+对应 Auth 邮箱：`admin@reelkit.app`
 
-## Setup
+## 模块
 
-1. Copy `.env.example` to `.env` and set `SUPABASE_URL` / `SUPABASE_KEY`
-2. `npm install`
-3. `npm run dev` (port 3001)
+- 系统管理：用户 / 角色 / 菜单权限
+- 短剧管理：多语言视频（fr/pt/ja/es/en）、标签、分集金币价
+- 客户管理：来源 pc/h5、金币余额调整
+- 统计：注册客户、播放排行、消费记录
 
-## Admin access
-
-Sign up / OTP login creates a `profiles` row with `role=user`. Promote an admin in Supabase SQL:
-
-```sql
-update public.profiles set role = 'admin' where email = 'you@example.com';
+```bash
+npm install
+npm run dev   # :3001
 ```
-
-## Features (MVP)
-
-- Dashboard counts
-- Dramas CRUD + cover upload (`posters` bucket)
-- Episodes management
-- Categories
-- Home sections + section items
