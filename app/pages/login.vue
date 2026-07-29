@@ -1,74 +1,53 @@
 <script setup lang="ts">
-const supabase = useSupabaseClient()
+const client = useSupabaseClient()
 const route = useRoute()
-const email = ref('')
-const otp = ref('')
-const step = ref<'email' | 'otp'>('email')
+const username = ref('admin')
+const password = ref('admin123')
 const loading = ref(false)
 const message = ref('')
 const error = computed(() => String(route.query.error || ''))
 
-async function sendOtp() {
+async function login() {
   loading.value = true
   message.value = ''
-  const { error: err } = await supabase.auth.signInWithOtp({ email: email.value.trim() })
-  loading.value = false
-  if (err) {
-    message.value = err.message
+  const loginId = username.value.trim()
+  const { data: email, error: resolveErr } = await client.rpc('resolve_auth_email', { p_login: loginId })
+  if (resolveErr || !email) {
+    loading.value = false
+    message.value = resolveErr?.message || '账号不存在'
     return
   }
-  step.value = 'otp'
-  message.value = 'Check your email for the one-time code.'
-}
-
-async function verifyOtp() {
-  loading.value = true
-  message.value = ''
-  const { error: err } = await supabase.auth.verifyOtp({
-    email: email.value.trim(),
-    token: otp.value.trim(),
-    type: 'email',
+  const { error: authErr } = await client.auth.signInWithPassword({
+    email: String(email),
+    password: password.value,
   })
   loading.value = false
-  if (err) {
-    message.value = err.message
+  if (authErr) {
+    message.value = authErr.message
     return
   }
-
   const user = useSupabaseUser()
-  const { data } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.value!.id)
-    .maybeSingle()
-
-  if (data?.role !== 'admin') {
-    await supabase.auth.signOut()
-    message.value = 'This account is not an admin. Set role=admin in profiles first.'
+  const { data: profile } = await client.from('profiles').select('role,status').eq('id', user.value!.id).maybeSingle()
+  if (profile?.role !== 'admin' || profile.status === 'disabled') {
+    await client.auth.signOut()
+    message.value = '该账号无管理端权限'
     return
   }
-
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
   await navigateTo(redirect)
 }
 </script>
 
 <template>
-  <div class="container" style="max-width: 420px; padding-top: 80px;">
-    <div class="card stack">
-      <h1>ReelKit Admin</h1>
-      <p class="muted">Sign in with email OTP. Admin role required.</p>
-      <p v-if="error === 'not_admin'" class="error">Not an admin account.</p>
-      <template v-if="step === 'email'">
-        <input v-model="email" class="input" type="email" placeholder="Admin email" @keyup.enter="sendOtp">
-        <button class="btn" :disabled="loading || !email" @click="sendOtp">Send code</button>
-      </template>
-      <template v-else>
-        <input v-model="otp" class="input" type="text" placeholder="OTP code" @keyup.enter="verifyOtp">
-        <button class="btn" :disabled="loading || !otp" @click="verifyOtp">Verify</button>
-        <button class="btn secondary" @click="step = 'email'">Back</button>
-      </template>
-      <p v-if="message" class="muted">{{ message }}</p>
+  <div style="min-height:100vh; display:grid; place-items:center; padding:24px;">
+    <div class="card stack" style="width:min(420px,100%);">
+      <h1 style="margin:0;">管理端登录</h1>
+      <p class="muted">账号密码登录（默认 admin / admin123）</p>
+      <p v-if="error === 'forbidden'" class="error">无权限访问管理端</p>
+      <label>账号<input v-model="username" class="input" autocomplete="username" @keyup.enter="login"></label>
+      <label>密码<input v-model="password" class="input" type="password" autocomplete="current-password" @keyup.enter="login"></label>
+      <button class="btn" :disabled="loading || !username || !password" @click="login">登录</button>
+      <p v-if="message" class="error">{{ message }}</p>
     </div>
   </div>
 </template>
